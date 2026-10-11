@@ -101,7 +101,7 @@
   }
   .modal.on { display:flex; }
   .modal h3 { font-size:3vh; margin-bottom:1.5vh; color:var(--neon); }
-  .modal iframe { border-radius:16px; box-shadow:0 0 50px rgba(61,187,74,.5); background:#fff; border:none; }
+  .modal iframe { border-radius:16px; background:#fff; box-shadow:0 0 50px rgba(61,187,74,.5); background:#fff; border:none; }
   .modal .big { width:min(92vw,1100px); height:min(84vh,820px); }
   /* Scratch punya stage tetap 485x402 -> perbesar via scale */
   .scale-wrap { transform:scale(1.9); transform-origin:center center; }
@@ -225,8 +225,10 @@
       : `<a class="openpb" onclick="window.open(DRIVE['${p.no}'],'_blank');window.open('https://pictoblox.ai','_blank')">▶ Ambil project &amp; buka PictoBlox</a>`;
     const langkah = `<div class="pbhint">${LOKAL?'File .sb3 terunduh otomatis.':'Unduh file .sb3 dari Drive peserta.'} Di PictoBlox pilih <b>Blocks</b> → <b>File → Load from your computer</b> → pilih file project #${p.no}.</div>`;
     const info = `${sumber}${langkah}<div class="info"><b style="color:var(--neon2)">${p.who}</b> · ${p.school}<br>${p.tech}</div>`;
-    if (p.scenes.length) { mBody.innerHTML = `<img class="bigimg" id="mImg" src="${p.scenes[0]}">${info}`; let k=0; clearInterval(window._mt); window._mt=setInterval(()=>{ const im=document.getElementById('mImg'); if(!im) return clearInterval(window._mt); k=(k+1)%p.scenes.length; im.src=p.scenes[k]; },2500); }
-    else mBody.innerHTML = `<div style="font-size:20vh;text-align:center">${p.icon}</div>${info}`;
+    const tw = 'https://turbowarp.org/embed?autoplay&settings-button&fullscreen-background=%23ffffff&project_url=' + encodeURIComponent('https://agungardiansyah26.github.io/ycwc2026-intermediate/beginner/play/' + p.no + '.sb3');
+    mBody.innerHTML = `<iframe class="big" src="${tw}" allow="camera;microphone;fullscreen" allowfullscreen style="width:min(92vw,128vh);height:min(69vw,72vh)"></iframe><div class="pbhint">Versi tampilan: fitur AI (kamera/ML) hanya jalan di PictoBlox.</div>${info}`;
+    if (false) { mBody.innerHTML = `<img class="bigimg" id="mImg" src="${p.scenes[0]}">${info}`; let k=0; clearInterval(window._mt); window._mt=setInterval(()=>{ const im=document.getElementById('mImg'); if(!im) return clearInterval(window._mt); k=(k+1)%p.scenes.length; im.src=p.scenes[k]; },2500); }
+    else if (false) mBody.innerHTML = `<div style="font-size:20vh;text-align:center">${p.icon}</div>${info}`;
     modal.classList.add("on");
   }
   document.getElementById('nInt').href = LOKAL ? 'http://127.0.0.1:8090/' : '../';
