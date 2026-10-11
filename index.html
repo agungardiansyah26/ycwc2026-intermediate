@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YCWC 2026 Intermediate</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --neon:#3dbb4a; --neon2:#ffd400; --pink:#ff3d8b; --cyan:#2ec5ff; --bg:#1433b8; --card:#ffffff; }
+  html,body { height:100%; }
+  body {
+    background:
+      radial-gradient(rgba(255,255,255,.10) 1.5px, transparent 1.6px) 0 0/3vh 3vh,
+      radial-gradient(900px 500px at 15% 0%, rgba(46,197,255,.35), transparent),
+      radial-gradient(800px 500px at 100% 100%, rgba(61,187,74,.30), transparent),
+      linear-gradient(160deg, #1a3fd0 0%, #1433b8 55%, #0e2490 100%);
+    color:#ffffff; font-family:'Segoe UI',system-ui,sans-serif;
+    overflow:hidden; height:100vh; display:flex; flex-direction:column;
+  }
+  header { display:flex; align-items:center; justify-content:center; gap:2vh; padding:2vh 0 1vh; }
+  header img.logo { height:9vh; width:auto; filter:drop-shadow(0 4px 14px rgba(0,0,0,.5)); }
+  header .titles { text-align:left; }
+  header h1.unused {
+    font-size:4vh; font-weight:800; letter-spacing:2px;
+    background:linear-gradient(90deg,var(--neon),var(--neon2));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    text-shadow:0 0 30px rgba(46,204,113,.3);
+  }
+  header p { color:#c9d4ff; font-size:2vh; margin-top:.3vh; letter-spacing:1px; }
+  header p b { color:var(--neon2); }
+
+  /* Track galeri bergeser (scroll JS) */
+  .stage { flex:1; display:flex; align-items:center; overflow:hidden; position:relative; }
+  .track {
+    display:flex; gap:3vh; padding:0 6vw; overflow-x:auto;
+    width:100%; scrollbar-width:none;
+  }
+  .track::-webkit-scrollbar { display:none; }
+
+  /* Tombol geser manual kiri/kanan */
+  .nav {
+    position:absolute; top:50%; transform:translateY(-50%); z-index:20;
+    width:8vh; height:8vh; border-radius:50%; cursor:pointer; border:none;
+    background:rgba(14,18,48,.75); color:var(--neon); font-size:4.5vh; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid rgba(34,224,255,.5); box-shadow:0 6px 24px rgba(0,0,0,.5);
+    transition:background .2s, transform .1s;
+  }
+  .nav:hover { background:rgba(34,224,255,.25); }
+  .nav:active { transform:translateY(-50%) scale(.9); }
+  .nav.left { left:1.5vw; }
+  .nav.right { right:1.5vw; }
+
+  .card {
+    flex:0 0 26vw; height:62vh; border-radius:22px; cursor:pointer;
+    background:var(--card); border:1px solid rgba(34,224,255,.25);
+    box-shadow:0 10px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.03);
+    display:flex; flex-direction:column; overflow:hidden; position:relative;
+    transition:transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .card:hover {
+    transform:translateY(-1vh) scale(1.02);
+    border-color:var(--neon);
+    box-shadow:0 20px 60px rgba(34,224,255,.35);
+  }
+  .thumb {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size:13vh; position:relative; overflow:hidden;
+  }
+  /* kilau lembut yang bergerak melintas */
+  .thumb::after {
+    content:""; position:absolute; top:-50%; left:-60%; width:60%; height:200%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+    transform:rotate(18deg); animation:shine 5s ease-in-out infinite;
+  }
+  @keyframes shine { 0%,60%{left:-60%;} 100%{left:130%;} }
+  .thumb::after { z-index:3; }
+  .thumb .shot { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; opacity:0; transition:opacity 1s; }
+  .thumb .shot.on { opacity:1; }
+  .thumb.has-shot .ico { display:none; }
+  .thumb .ico { position:relative; z-index:2; filter:drop-shadow(0 6px 18px rgba(0,0,0,.45)); animation:float 3.5s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-1.6vh) scale(1.06);} }
+  .badge {
+    position:absolute; top:1.4vh; right:1.4vh; font-size:1.5vh; font-weight:700;
+    padding:.5vh 1.4vh; border-radius:999px; letter-spacing:1px; z-index:5; background-color:rgba(0,0,0,.6) !important;
+  }
+  .badge.py { background:rgba(34,224,255,.15); color:var(--neon); border:1px solid var(--neon); }
+  .badge.sc { background:rgba(255,180,60,.15); color:#ffb43c; border:1px solid #ffb43c; }
+  .meta { padding:2vh 2vw; }
+  .meta h2 { font-size:2.7vh; font-weight:700; }
+  .meta small { color:#8ea3d6; font-size:1.8vh; display:block; }
+  .meta .who { color:var(--neon2); font-size:1.9vh; margin-top:.6vh; }
+  .no { position:absolute; top:1.4vh; left:1.4vh; z-index:5; background:rgba(0,0,0,.55); color:#fff; font-weight:800; font-size:2vh; padding:.4vh 1.2vh; border-radius:10px; }
+  .modal video, .modal .bigimg { max-width:88vw; max-height:74vh; border-radius:16px; box-shadow:0 0 50px rgba(61,187,74,.5); background:#000; }
+  .modal .info { margin-top:1.5vh; font-size:2.2vh; color:#bfe8cf; text-align:center; }
+
+  /* Modal */
+  .modal {
+    position:fixed; inset:0; background:rgba(10,25,110,.94); display:none;
+    align-items:center; justify-content:center; flex-direction:column; z-index:50;
+  }
+  .modal.on { display:flex; }
+  .modal h3 { font-size:3vh; margin-bottom:1.5vh; color:var(--neon); }
+  .modal iframe { border-radius:16px; box-shadow:0 0 50px rgba(61,187,74,.5); background:#fff; border:none; }
+  .modal .big { width:min(92vw,1100px); height:min(84vh,820px); }
+  /* Scratch punya stage tetap 485x402 -> perbesar via scale */
+  .scale-wrap { transform:scale(1.9); transform-origin:center center; }
+  .modal .status { font-size:3vh; text-align:center; max-width:70vw; }
+  .close {
+    position:absolute; top:3vh; right:4vw; font-size:3vh; cursor:pointer;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+    border-radius:12px; padding:.6vh 2vh; color:#fff;
+  }
+  .close:hover { background:rgba(255,255,255,.18); }
+  .logo-yc { font-size:6.2vh; font-weight:900; letter-spacing:.3vh; line-height:1; color:#fff; text-shadow:0 .5vh 0 #0b1f7a; font-family:'Arial Black','Segoe UI',sans-serif; }
+  .logo-yc .br { color:var(--neon2); }
+  .wc { display:inline-block; margin-top:.8vh; padding:.3vh 2vh; border-radius:8px; background:var(--neon); color:#fff; font-weight:900; font-size:2.2vh; letter-spacing:.4vh; box-shadow:0 .4vh 0 #23852f; }
+  header p { margin-top:1vh !important; }
+  header p b { color:var(--neon2) !important; }
+  .cubes { display:grid; grid-template-columns:repeat(2,4.2vh); gap:.6vh; transform:rotate(45deg); margin-right:2vh; animation:float 3.5s ease-in-out infinite; }
+  .cubes i { width:4.2vh; height:4.2vh; border-radius:.8vh; box-shadow:inset -.5vh -.5vh 0 rgba(0,0,0,.18); }
+  header .trophy { font-size:8vh; filter:drop-shadow(0 0 18px rgba(255,210,63,.7)); animation:float 3s ease-in-out infinite; }
+  header .ball { font-size:5vh; animation:spin 6s linear infinite; display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  header .theme { display:inline-block; margin-top:.8vh; padding:.4vh 1.6vh; border-radius:999px; font-size:1.7vh; font-weight:700; letter-spacing:2px; color:#06112e; background:linear-gradient(90deg,var(--neon),var(--neon2)); }
+  .pitchline.unused { position:fixed; left:50%; top:0; bottom:0; width:2px; background:rgba(255,255,255,.05); pointer-events:none; }
+  .pitchline::after { content:""; position:absolute; left:50%; top:50%; width:28vh; height:28vh; transform:translate(-50%,-50%); border:2px solid rgba(255,255,255,.05); border-radius:50%; }
+  .card { border:none !important; background:#fff !important; box-shadow:0 1.2vh 0 #0b1f7a, 0 2vh 40px rgba(0,0,0,.35) !important; }
+  .card:hover { box-shadow:0 1.2vh 0 var(--neon), 0 2vh 50px rgba(0,0,0,.4) !important; }
+  .meta h2 { color:#1433b8; }
+  .meta .who { color:#e0287a !important; font-weight:700; }
+  .meta small { color:#4a5a8a !important; }
+  .no { background:var(--neon) !important; }
+  .badge.sc { background:#1433b8 !important; color:#fff !important; border-color:#fff !important; }
+  .openpb { margin-top:2vh; display:inline-block; padding:1.4vh 3vh; border-radius:14px; font-size:2.3vh; font-weight:800; color:#fff; text-decoration:none; background:var(--neon); box-shadow:0 .5vh 0 #23852f; cursor:pointer; }
+  #mBody { display:flex; flex-direction:column; align-items:center; }
+  .catnav { position:fixed; top:2vh; right:2vw; z-index:30; display:flex; gap:1vh; }
+  .catnav a { padding:.6vh 1.6vh; border-radius:10px; font-weight:800; font-size:1.7vh; text-decoration:none; color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); }
+  .catnav a.on { background:var(--neon); border-color:var(--neon); }
+  .pbhint { margin-top:1.2vh; font-size:1.8vh; color:#9fb0e6; text-align:center; max-width:70vw; }
+  .hint { text-align:center; color:#c9d6ff; font-size:1.7vh; padding:1.2vh 0 2vh; }
+</style>
+</head>
+<body>
+  <nav class="catnav"><a id="nBeg" class="">Beginner</a><a id="nInt" class="on">Intermediate</a></nav>
+  <header>
+    <div class="cubes"><i style="background:var(--pink)"></i><i style="background:var(--neon2)"></i><i style="background:var(--cyan)"></i><i style="background:var(--neon)"></i></div>
+    <div class="titles" style="text-align:center">
+      <div class="logo-yc">YOUNG C<span class="br">{}</span>DER</div>
+      <span class="wc">WORLD CUP 2026</span>
+      <p>Kategori <b>Intermediate</b> · Sumatera Utara · Galeri Karya Peserta</p>
+    </div>
+  </header>
+
+  <div class="pitchline"></div>
+  <div class="stage">
+    <button class="nav left" onclick="nudge(-1)" aria-label="Sebelumnya">‹</button>
+    <div class="track" id="track"></div>
+    <button class="nav right" onclick="nudge(1)" aria-label="Berikutnya">›</button>
+  </div>
+  <div class="hint">Galeri bergeser otomatis · pakai tombol ‹ › untuk geser manual · klik kartu untuk melihat lebih besar</div>
+
+  <div class="modal" id="modal">
+    <div class="close" onclick="closeModal()">✕ Tutup</div>
+    <h3 id="mTitle"></h3>
+    <div id="mBody"></div>
+  </div>
+
+<script>
+  const P = (no,icon,title,who,school,tech,grad,video,thumb) => ({no,icon,title,who,school,tech,grad,video,img: thumb===null?null:`thumbs/${no}.${thumb}`});
+  const PROJECTS = [
+    P("09","🎹","Numera Piano","Alesandro Wijaya","SMP W.R Supratman 1 Medan","PictoBlox · Machine Learning",["#3a1c71","#d76d77"],null,null),
+    P("10","♻️","Daur Ulang Sampah","Felicia Tio","SMP W.R Supratman 2 Medan","PictoBlox · ML + Text to Speech",["#11998e","#38ef7d"],null,"svg"),
+    P("11","🌱","Garden Verse","Rafael Arjuna Paian Situmorang","SMP Santo Thomas 1 Medan","PictoBlox · Machine Learning",["#134e5e","#71b280"],null,"png"),
+    P("12","🎵","AI Mood-Driven Music Player","Javello Clayvanjonier Octenstain","SMP W.R Supratman 1 Medan","PictoBlox · Face Detection + ML",["#8e2de2","#4a00e0"],null,"png"),
+    P("13","📊","Economy Analytics","Jason Lie","SMP W.R Supratman 2 Medan","PictoBlox",["#004e92","#000428"],null,"svg"),
+    P("14","🚨","AI Disaster Rescue Coordinator","Herbert Eugenio Lesmana","SMP W.R Supratman 1 Medan","PictoBlox · Machine Learning",["#f12711","#f5af19"],null,"png"),
+    P("15","🌃","City//Hush","Jaden Zhurich","Nakamura School","Scratch · Text to Speech",["#141e30","#243b55"],null,"svg"),
+    P("16","🔍","Lost Item Hunter","Muhammad Faizurrahman Najhan","SMP Yayasan Pendidikan Shafiyyatul Amaliyyah","PictoBlox · Machine Learning",["#ff512f","#dd2476"],null,"png"),
+    P("17","🐯","Sumatran Tiger Y U Mad","Nayra Octiva Renadha","SMP Harapan 2 Medan","PictoBlox · PoseNet + Video Sensing",["#f7971e","#ffd200"],null,"png"),
+    P("18","🛡️","Cyber Shield AI: Network Defense","Ferry Tanuhardy","SMP W.R Supratman 2 Medan","PictoBlox · Machine Learning",["#0f2027","#2c5364"],null,"png"),
+  ];
+  const DRIVE = {"09":"https://drive.google.com/drive/folders/10VJ4TdB02FGaICoO9DjjPf0sYzysjEn6","10":"https://drive.google.com/drive/folders/1ltoLZgs2pXjjVw6wZPzHabUVWSxsSQbM","11":"https://drive.google.com/drive/folders/1ITA-rfu9lof6BYupFRmITcD1vafieohu","12":"https://drive.google.com/drive/folders/1HUlg0_aFVpPyYPD9vKRQmWwWEDUsGF7Z","14":"https://drive.google.com/drive/folders/1h9qKmB3XPwoJvPOST9WEASKurdoHSsPL","15":"https://drive.google.com/drive/folders/1UyVt9LqWMmYWb9i9YuNP7GE6ofd0IxGt","16":"https://drive.google.com/drive/folders/1pOd73--7Od_HVhBzEnzNHigHEN8MkoVb","17":"https://drive.google.com/drive/folders/1BcZDddJCr74ixluP02u5j5jT7XeUZDdB","18":"https://drive.google.com/drive/folders/1bDGiQ2S2stI_Hi1FmNpz732_Q0HsShaW","13":"https://drive.google.com/file/d/1OnHV1WRttY5GZEvh4t4POygu-eW383Xv/view"};
+  const LOKAL = ['127.0.0.1','localhost'].includes(location.hostname);
+  const SCENES = {"09": ["scenes/09-0.jpg"], "10": ["scenes/10-0.jpg", "scenes/10-1.jpg", "scenes/10-2.jpg"], "11": ["scenes/11-0.jpg", "scenes/11-1.jpg", "scenes/11-2.jpg"], "12": ["scenes/12-0.jpg", "scenes/12-1.jpg", "scenes/12-2.jpg"], "13": ["scenes/13-0.jpg", "scenes/13-1.jpg", "scenes/13-2.jpg"], "14": ["scenes/14-0.jpg", "scenes/14-1.jpg", "scenes/14-2.jpg"], "15": ["scenes/15-0.jpg", "scenes/15-1.jpg", "scenes/15-2.jpg"], "16": ["scenes/16-0.jpg", "scenes/16-1.jpg", "scenes/16-2.jpg"], "17": ["scenes/17-0.jpg", "scenes/17-1.jpg", "scenes/17-2.jpg"], "18": ["scenes/18-0.jpg", "scenes/18-1.jpg", "scenes/18-2.jpg"]};
+  PROJECTS.forEach(p=>{ const a=SCENES[p.no]||[]; p.scenes = p.no==="09" ? [] : a; });
+  const track = document.getElementById("track");
+  function cardHTML(p,i){
+    const badge = `<span class="badge sc">${p.tech.split(' ')[0].toUpperCase()}</span>`;
+    const g = `background:linear-gradient(155deg,${p.grad[0]},${p.grad[1]});`;
+    const shot = p.scenes.map((f,k)=>`<img class="shot sc-img${k?'':' on'}" src="${f}" alt="">`).join('');
+    return `<div class="card" onclick="openProject(${i})">
+      <span class="no">#${p.no}</span>${badge}
+      <div class="thumb ${p.scenes.length?'has-shot':''}" style="${g}">${shot}<span class="ico">${p.icon}</span></div>
+      <div class="meta"><h2>${p.title}</h2><div class="who">${p.who}</div><small>${p.school}</small><small>${p.tech}</small></div>
+    </div>`;
+  }
+  track.innerHTML = PROJECTS.map(cardHTML).join("").repeat(2);
+
+  let pauseUntil = 0;
+  const SPEED = 1.4;
+  function half(){ return track.scrollWidth / 2; }
+  function autoTick(){
+    if (Date.now() > pauseUntil && !modal.classList.contains("on")) {
+      track.scrollLeft += SPEED;
+      if (track.scrollLeft >= half()) track.scrollLeft -= half();
+    }
+    requestAnimationFrame(autoTick);
+  }
+  function nudge(dir){
+    pauseUntil = Date.now() + 5000;
+    const card = track.querySelector(".card");
+    const step = card ? card.getBoundingClientRect().width + 24 : 400;
+    let target = track.scrollLeft + dir * step;
+    if (target < 0) target += half();
+    track.scrollTo({ left: target, behavior:"smooth" });
+  }
+  track.addEventListener("pointerdown", ()=> pauseUntil = Date.now() + 5000);
+
+  const modal=document.getElementById("modal"), mTitle=document.getElementById("mTitle"), mBody=document.getElementById("mBody");
+  requestAnimationFrame(autoTick);
+  setInterval(()=>{ document.querySelectorAll('.thumb').forEach(t=>{ const im=t.querySelectorAll('.sc-img'); if(im.length<2) return; const i=[...im].findIndex(x=>x.classList.contains('on')); im[i].classList.remove('on'); im[(i+1)%im.length].classList.add('on'); }); },2800);
+  function openProject(i){
+    const p = PROJECTS[i];
+    mTitle.textContent = `#${p.no} · ${p.title}`;
+    const sumber = LOKAL ? `<a class="openpb" onclick="bukaPB('${p.no}')">▶ Buka di PictoBlox</a>`
+      : `<a class="openpb" onclick="window.open(DRIVE['${p.no}'],'_blank');window.open('https://pictoblox.ai','_blank')">▶ Ambil project &amp; buka PictoBlox</a>`;
+    const langkah = `<div class="pbhint">${LOKAL?'File .sb3 terunduh otomatis.':'Unduh file .sb3 dari Drive peserta.'} Di PictoBlox pilih <b>Blocks</b> → <b>File → Load from your computer</b> → pilih file project #${p.no}.</div>`;
+    const info = `${sumber}${langkah}<div class="info"><b style="color:var(--neon2)">${p.who}</b> · ${p.school}<br>${p.tech}</div>`;
+    if (p.scenes.length) { mBody.innerHTML = `<img class="bigimg" id="mImg" src="${p.scenes[0]}">${info}`; let k=0; clearInterval(window._mt); window._mt=setInterval(()=>{ const im=document.getElementById('mImg'); if(!im) return clearInterval(window._mt); k=(k+1)%p.scenes.length; im.src=p.scenes[k]; },2500); }
+    else mBody.innerHTML = `<div style="font-size:20vh;text-align:center">${p.icon}</div>${info}`;
+    modal.classList.add("on");
+  }
+  document.getElementById('nBeg').href = LOKAL ? 'http://127.0.0.1:8092/' : 'beginner/';
+  function bukaPB(no){
+    const a=document.createElement('a'); a.href=`sb3/${no}.sb3`; a.download=`YCWC-${no}.sb3`; document.body.appendChild(a); a.click(); a.remove();
+    window.open('https://pictoblox.ai','_blank');
+  }
+  function closeModal(){ modal.classList.remove("on"); mBody.innerHTML=""; }
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+</script>
+</body>
+</html>
